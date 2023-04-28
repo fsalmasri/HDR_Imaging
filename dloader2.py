@@ -79,45 +79,47 @@ class HDRDataset(Dataset):
         return len(self.df.index)
 
     def __getitem__(self, index):
-        high_to_ref_path = Image.open(self.df.iloc[index, 0])
-        low_to_ref_path = Image.open(self.df.iloc[index, 1])
-        tif1_path = Image.open(self.df.iloc[index, 2])
-        tif2_path = Image.open(self.df.iloc[index, 3])
-        tif3_path = Image.open(self.df.iloc[index, 4])
+        high_to_ref = Image.open(self.df.iloc[index, 0])
+        low_to_ref = Image.open(self.df.iloc[index, 1])
+        tif1 = Image.open(self.df.iloc[index, 2])
+        tif2 = Image.open(self.df.iloc[index, 3])
+        tif3 = Image.open(self.df.iloc[index, 4])
+
         # gamma_high_to_ref_path = LDR2HDR(cv2.imread(self.df.iloc[index, 0]), self.df.iloc[index, 6])
-        gamma_high_to_ref_path = LDR2HDR(
+        gamma_high_to_ref = LDR2HDR(
             cv2.resize(cv2.cvtColor(cv2.imread(self.df.iloc[index, 0]), cv2.COLOR_BGR2RGB), insize),
             self.df.iloc[index, 6])
-        gamma_low_to_ref_path = LDR2HDR(
+        gamma_low_to_ref = LDR2HDR(
             cv2.resize(cv2.cvtColor(cv2.imread(self.df.iloc[index, 1]), cv2.COLOR_BGR2RGB), insize),
             self.df.iloc[index, 7])
-        gamma_tif1_path = LDR2HDR(
+        gamma_tif1 = LDR2HDR(
             cv2.resize(cv2.cvtColor(cv2.imread(self.df.iloc[index, 2]), cv2.COLOR_BGR2RGB), insize),
             self.df.iloc[index, 8])
-        gamma_tif2_path = LDR2HDR(
+        gamma_tif2 = LDR2HDR(
             cv2.resize(cv2.cvtColor(cv2.imread(self.df.iloc[index, 3]), cv2.COLOR_BGR2RGB), insize),
             self.df.iloc[index, 9])
-        gamma_tif3_path = LDR2HDR(
+        gamma_tif3 = LDR2HDR(
             cv2.resize(cv2.cvtColor(cv2.imread(self.df.iloc[index, 4]), cv2.COLOR_BGR2RGB), insize),
             self.df.iloc[index, 10])
+
         y_label = cv2.imread(self.df.iloc[index, 5], flags=cv2.IMREAD_ANYDEPTH)
         # y_label          = cv2.cvtColor(y_label, cv2.COLOR_BGR2RGB)
         y_label = cv2.resize(y_label, dsize=self.outsize)
 
         if self.input_transformer:
-            high_to_ref_path = self.input_transformer(high_to_ref_path)
-            low_to_ref_path = self.input_transformer(low_to_ref_path)
-            tif1_path = self.input_transformer(tif1_path)
-            tif2_path = self.input_transformer(tif2_path)
-            tif3_path = self.input_transformer(tif3_path)
+            high_to_ref = self.input_transformer(high_to_ref)
+            low_to_ref = self.input_transformer(low_to_ref)
+            tif1 = self.input_transformer(tif1)
+            tif2 = self.input_transformer(tif2)
+            tif3 = self.input_transformer(tif3)
 
         if self.output_transformer:
             y_label = self.output_transformer(y_label)
-            gamma_high_to_ref_path = self.output_transformer(gamma_high_to_ref_path)
-            gamma_low_to_ref_path = self.output_transformer(gamma_low_to_ref_path)
-            gamma_tif1_path = self.output_transformer(gamma_tif1_path)
-            gamma_tif2_path = self.output_transformer(gamma_tif2_path)
-            gamma_tif3_path = self.output_transformer(gamma_tif3_path)
+            gamma_high_to_ref = self.output_transformer(gamma_high_to_ref)
+            gamma_low_to_ref = self.output_transformer(gamma_low_to_ref)
+            gamma_tif1 = self.output_transformer(gamma_tif1)
+            gamma_tif2 = self.output_transformer(gamma_tif2)
+            gamma_tif3 = self.output_transformer(gamma_tif3)
 
         # print("dim1 is ", high_to_ref_path.shape)
         # print("dim2 is ", gamma_high_to_ref_path.shape)
@@ -127,8 +129,8 @@ class HDRDataset(Dataset):
         # tif1_path = torch.concat([tif1_path, gamma_tif1_path])
         # tif2_path = torch.concat([tif2_path, gamma_tif2_path])
         # tif3_path = torch.concat([tif3_path, gamma_tif3_path])
-        imgs = [high_to_ref_path, low_to_ref_path, tif1_path, tif2_path, tif3_path,
-                gamma_high_to_ref_path, gamma_low_to_ref_path, gamma_tif1_path, gamma_tif2_path, gamma_tif3_path,
+        imgs = [high_to_ref, low_to_ref, tif1, tif2, tif3,
+                gamma_high_to_ref, gamma_low_to_ref, gamma_tif1, gamma_tif2, gamma_tif3,
                 y_label]
         flip = transforms.RandomHorizontalFlip(p=1)
         if self.flip_prob > 0 and random.random() < self.flip_prob:
