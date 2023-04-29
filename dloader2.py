@@ -1,17 +1,18 @@
-import matplotlib.pyplot as plt
-import numpy as np
-from torchvision import transforms
-
 import os
+import numpy as np
+import pandas as pd
 from os.path import join
-import random
-from PIL import Image
-from torch.utils.data.dataset import Dataset
-import imageio
-imageio.plugins.freeimage.download()
+import matplotlib.pyplot as plt
 
 import cv2
-import pandas as pd
+import imageio
+imageio.plugins.freeimage.download()
+from PIL import Image
+
+import torch
+from torchvision import transforms
+from torch.utils.data.dataset import Dataset
+from torchvision.transforms import ToTensor
 
 
 def LDR2HDR(img, expo):
@@ -29,7 +30,7 @@ def LDR2HDR(img, expo):
     # table = [((i / 255) ** invGamma) * 255 for i in range(256)]
     # table = np.array(table, np.uint8)
     # return cv2.LUT(img,table)
-    return ((img ** GAMMA) * 2.0 ** (-1 * expo)) ** (1 / GAMMA)
+    return (((img ** GAMMA) * 2.0 ** (-1 * expo)) ** (1 / GAMMA)).astype(np.float32)
 
 
 class HDRDataset(Dataset):
@@ -82,7 +83,7 @@ class HDRDataset(Dataset):
             self.df = pd.read_excel(excel_path, index_col=None)
 
     def __len__(self):
-        return len(self.df.index)
+        return 5 #len(self.df.index)
 
     def __getitem__(self, index):
 
@@ -95,7 +96,6 @@ class HDRDataset(Dataset):
         tif2 = Image.open(tif_lst[1])
         tif3 = Image.open(tif_lst[2])
 
-        print(self.df.iloc[index])
         expo_lst = self.df.iloc[index]['expos'].strip('][').split(', ')
 
         gamma_high_to_ref = LDR2HDR(high_to_ref.resize(self.insize), float(expo_lst[0]))
@@ -123,12 +123,11 @@ class HDRDataset(Dataset):
             gamma_tif2 = self.output_transformer(gamma_tif2)
             gamma_tif3 = self.output_transformer(gamma_tif3)
 
-
-        imgs = [high_to_ref, low_to_ref, tif1, tif2, tif3,
-                gamma_high_to_ref, gamma_low_to_ref, gamma_tif1, gamma_tif2, gamma_tif3,
-                y_label]
         # flip = transforms.RandomHorizontalFlip(p=1)
         # if self.flip_prob > 0 and random.random() < self.flip_prob:
         #     imgs = [flip(img) for img in imgs]
 
-        return imgs
+        return {"H2R": high_to_ref, "L2R": low_to_ref,
+                "TIF1": tif1, "TIF2": tif2, "TIF3": tif3,
+                "GH2R": gamma_high_to_ref, "GL2R": gamma_low_to_ref,
+                "GTIF1": gamma_tif1, "GTIF2": gamma_tif2, "GTIF3": gamma_tif3, "GT": y_label}

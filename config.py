@@ -4,7 +4,7 @@ def get_configs():
     parser = argparse.ArgumentParser(description='HDR Optim')
 
     parser.add_argument('--batch_size', type=int, default=1, help='input batch size for training')
-    parser.add_argument('--epochs', type=int, default=10, help='number of epochs to train')
+    parser.add_argument('--n_epochs', type=int, default=100000, help='number of epochs to train')
 
     parser.add_argument('--train_ds_path', type=str, default=r'C:\Users\fedai\Desktop\mustafa_data\Training',
                         help='Training set folder path')
